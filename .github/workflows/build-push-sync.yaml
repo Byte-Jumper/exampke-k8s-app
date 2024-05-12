@@ -10,13 +10,16 @@ permissions:
 jobs:
   build-and-push-backend:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - dockerfile: ./backend/Dockerfile
-            image: "${ secrets.DOCKERHUB_USERNAME }/example-backend"
-            context: ./backend
+    defaults:
+      run:
+        working-directory: ./backend
+    # strategy:
+    #   fail-fast: false
+    #   matrix:
+    #     include:
+    #       - dockerfile: ./backend/Dockerfile
+    #         image: "${ secrets.DOCKERHUB_USERNAME }/example-backend"
+    #         context: ./backend
 
     steps:
       - name: Checkout code
@@ -32,15 +35,15 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ matrix.image }}
+          images: "jumpdaddy/example-backend"
           tags: |
             type=semver,pattern={{version}}
 
       - name: Build and push Docker Images
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.dockerfile }}
+          context: .
+          file: ./Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
